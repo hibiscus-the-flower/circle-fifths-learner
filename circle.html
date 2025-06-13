@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Circle of Fifths</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: white;
+        }
+        
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            justify-content: center;
+            align-items: flex-start;
+        }
+        
+        .circle-container {
+            position: relative;
+            width: 500px;
+            height: 500px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .circle-center {
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .key-button {
+            position: absolute;
+            width: 70px;
+            height: 40px;
+            border: none;
+            border-radius: 20px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            transform-origin: center;
+            background: linear-gradient(145deg, #ffffff, #e6e6e6);
+            color: #333;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .key-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+        
+        .key-button.active {
+            background: linear-gradient(145deg, #ffd700, #ffed4e);
+            transform: scale(1.15);
+            box-shadow: 0 10px 30px rgba(255, 215, 0, 0.5);
+        }
+        
+        .key-button.sharp {
+            background: linear-gradient(145deg, #333, #555);
+            color: white;
+        }
+        
+        .key-button.sharp.active {
+            background: linear-gradient(145deg, #ff6b6b, #ee5a5a);
+        }
+        
+        .info-panel {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            width: 350px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+        
+        .info-panel h2 {
+            margin-top: 0;
+            color: #ffd700;
+            text-align: center;
+            font-size: 28px;
+        }
+        
+        .key-info {
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            border-left: 4px solid #ffd700;
+        }
+        
+        .scale-display {
+            margin: 15px 0;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 16px;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        
+        .control-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 25px;
+            background: linear-gradient(145deg, #4CAF50, #45a049);
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .control-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .control-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .quiz-section {
+            margin-top: 20px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+        }
+        
+        .quiz-question {
+            font-size: 18px;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+        
+        .quiz-feedback {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+        
+        .correct {
+            background: rgba(76, 175, 80, 0.3);
+            color: #4CAF50;
+        }
+        
+        .incorrect {
+            background: rgba(244, 67, 54, 0.3);
+            color: #f44336;
+        }
+        
+        h1 {
+            text-align: center;
+            font-size: 36px;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .legend {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎵 Interactive Circle of Fifths</h1>
+    
+    <div class="container">
+        <div class="circle-container">
+            <div class="circle-center">
+                <span id="centerText">Circle of<br>Fifths</span>
+            </div>
+            <!-- Keys will be positioned here by JavaScript -->
+        </div>
+        
+        <div class="info-panel">
+            <h2>Key Information</h2>
+            
+            <div class="key-info">
+                <strong>Selected Key:</strong> <span id="selectedKey">None</span><br>
+                <strong>Accidentals:</strong> <span id="accidentals">-</span><br>
+                <strong>Relative Minor:</strong> <span id="relativeMinor">-</span><br>
+                <strong>Position:</strong> <span id="position">-</span>
+            </div>
+            
+            <div class="scale-display">
+                <strong>Major Scale:</strong><br>
+                <span id="majorScale">Click a key to see its scale</span>
+            </div>
+            
+            <div class="controls">
+                <button class="control-btn" onclick="playScale()">Play Scale</button>
+                <button class="control-btn" onclick="playChord()">Play Chord</button>
+                <button class="control-btn" onclick="showRelatives()">Show Relatives</button>
+                <button class="control-btn" onclick="startQuiz()">Quiz Mode</button>
+            </div>
+            
+            <div class="quiz-section" id="quizSection" style="display: none;">
+                <div class="quiz-question" id="quizQuestion"></div>
+                <div id="quizFeedback" class="quiz-feedback"></div>
+            </div>
+            
+            <div class="legend">
+                <strong>How to use:</strong><br>
+                • Click any key to explore its information<br>
+                • White keys = Natural keys<br>
+                • Dark keys = Sharp/Flat keys<br>
+                • Use controls to hear scales and chords<br>
+                • Try quiz mode to test your knowledge!
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Web Audio API setup
+        let audioContext;
+        let currentKey = null;
+        let isQuizMode = false;
+        let currentQuizAnswer = null;
+
+        // Initialize audio context on first user interaction
+        function initAudio() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        // Key data with positions and information
+        const keys = [
+            { name: 'C', accidentals: 0, position: 0, relatives: 'Am', scale: 'C D E F G A B', isSharp: false },
+            { name: 'G', accidentals: '1♯', position: 1, relatives: 'Em', scale: 'G A B C D E F♯', isSharp: false },
+            { name: 'D', accidentals: '2♯', position: 2, relatives: 'Bm', scale: 'D E F♯ G A B C♯', isSharp: false },
+            { name: 'A', accidentals: '3♯', position: 3, relatives: 'F♯m', scale: 'A B C♯ D E F♯ G♯', isSharp: false },
+            { name: 'E', accidentals: '4♯', position: 4, relatives: 'C♯m', scale: 'E F♯ G♯ A B C♯ D♯', isSharp: false },
+            { name: 'B', accidentals: '5♯', position: 5, relatives: 'G♯m', scale: 'B C♯ D♯ E F♯ G♯ A♯', isSharp: false },
+            { name: 'F♯', accidentals: '6♯', position: 6, relatives: 'D♯m', scale: 'F♯ G♯ A♯ B C♯ D♯ E♯', isSharp: true },
+            { name: 'D♭', accidentals: '5♭', position: 7, relatives: 'B♭m', scale: 'D♭ E♭ F G♭ A♭ B♭ C', isSharp: true },
+            { name: 'A♭', accidentals: '4♭', position: 8, relatives: 'Fm', scale: 'A♭ B♭ C D♭ E♭ F G', isSharp: true },
+            { name: 'E♭', accidentals: '3♭', position: 9, relatives: 'Cm', scale: 'E♭ F G A♭ B♭ C D', isSharp: true },
+            { name: 'B♭', accidentals: '2♭', position: 10, relatives: 'Gm', scale: 'B♭ C D E♭ F G A', isSharp: true },
+            { name: 'F', accidentals: '1♭', position: 11, relatives: 'Dm', scale: 'F G A B♭ C D E', isSharp: false }
+        ];
+
+        // Create key buttons and position them around the circle
+        function createCircle() {
+            const container = document.querySelector('.circle-container');
+            const radius = 180;
+            const centerX = 250;
+            const centerY = 250;
+
+            keys.forEach((key, index) => {
+                const button = document.createElement('button');
+                button.className = `key-button ${key.isSharp ? 'sharp' : ''}`;
+                button.textContent = key.name;
+                button.onclick = () => selectKey(key);
+
+                // Calculate position around circle
+                const angle = (index * 30 - 90) * (Math.PI / 180); // Start at top, 30° intervals
+                const x = centerX + radius * Math.cos(angle) - 35; // -35 to center button
+                const y = centerY + radius * Math.sin(angle) - 20; // -20 to center button
+
+                button.style.left = x + 'px';
+                button.style.top = y + 'px';
+
+                container.appendChild(button);
+            });
+        }
+
+        function selectKey(key) {
+            initAudio();
+            currentKey = key;
+
+            // Update visual selection
+            document.querySelectorAll('.key-button').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // Update information panel
+            document.getElementById('selectedKey').textContent = key.name + ' Major';
+            document.getElementById('accidentals').textContent = key.accidentals === 0 ? 'None' : key.accidentals;
+            document.getElementById('relativeMinor').textContent = key.relatives;
+            document.getElementById('position').textContent = `${key.position} o'clock`;
+            document.getElementById('majorScale').textContent = key.scale;
+
+            // Update center text
+            document.getElementById('centerText').innerHTML = `${key.name}<br>Major`;
+
+            // Check quiz answer if in quiz mode
+            if (isQuizMode && currentQuizAnswer === key.name) {
+                showQuizFeedback(true);
+            } else if (isQuizMode) {
+                showQuizFeedback(false);
+            }
+        }
+
+        // Audio functions using Web Audio API
+        function playTone(frequency, duration = 0.5, delay = 0) {
+            if (!audioContext) return;
+
+            setTimeout(() => {
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+
+                oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+                oscillator.type = 'sine';
+
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + duration);
+            }, delay * 1000);
+        }
+
+        function playScale() {
+            if (!currentKey) {
+                alert('Please select a key first!');
+                return;
+            }
+
+            initAudio();
+            const baseFreq = getKeyFrequency(currentKey.name);
+            const scaleFreqs = [1, 9/8, 5/4, 4/3, 3/2, 5/3, 15/8, 2].map(ratio => baseFreq * ratio);
+
+            scaleFreqs.forEach((freq, i) => {
+                playTone(freq, 0.4, i * 0.3);
+            });
+        }
+
+        function playChord() {
+            if (!currentKey) {
+                alert('Please select a key first!');
+                return;
+            }
+
+            initAudio();
+            const baseFreq = getKeyFrequency(currentKey.name);
+            // Major chord: root, major third, perfect fifth
+            const chordFreqs = [baseFreq, baseFreq * 5/4, baseFreq * 3/2];
+
+            chordFreqs.forEach(freq => {
+                playTone(freq, 2, 0);
+            });
+        }
+
+        function getKeyFrequency(keyName) {
+            const baseFreqs = {
+                'C': 261.63, 'D♭': 277.18, 'D': 293.66, 'E♭': 311.13,
+                'E': 329.63, 'F': 349.23, 'F♯': 369.99, 'G': 392.00,
+                'A♭': 415.30, 'A': 440.00, 'B♭': 466.16, 'B': 493.88
+            };
+            return baseFreqs[keyName] || 440;
+        }
+
+        function showRelatives() {
+            if (!currentKey) {
+                alert('Please select a key first!');
+                return;
+            }
+
+            alert(`${currentKey.name} Major is related to:\n\n` +
+                  `• Relative minor: ${currentKey.relatives}\n` +
+                  `• Dominant (5th up): ${keys[(keys.indexOf(currentKey) + 1) % 12].name}\n` +
+                  `• Subdominant (5th down): ${keys[(keys.indexOf(currentKey) + 11) % 12].name}`);
+        }
+
+        function startQuiz() {
+            isQuizMode = !isQuizMode;
+            const quizSection = document.getElementById('quizSection');
+            const button = event.target;
+
+            if (isQuizMode) {
+                quizSection.style.display = 'block';
+                button.textContent = 'Exit Quiz';
+                button.style.background = 'linear-gradient(145deg, #f44336, #d32f2f)';
+                generateQuizQuestion();
+            } else {
+                quizSection.style.display = 'none';
+                button.textContent = 'Quiz Mode';
+                button.style.background = 'linear-gradient(145deg, #4CAF50, #45a049)';
+                document.getElementById('quizFeedback').textContent = '';
+            }
+        }
+
+        function generateQuizQuestion() {
+            const randomKey = keys[Math.floor(Math.random() * keys.length)];
+            currentQuizAnswer = randomKey.name;
+
+            const questionTypes = [
+                `Which key has ${randomKey.accidentals === 0 ? 'no' : randomKey.accidentals} accidentals?`,
+                `What is the relative minor of ${randomKey.relatives}?`,
+                `Which major key contains the scale: ${randomKey.scale}?`
+            ];
+
+            const randomQuestion = questionTypes[Math.floor(Math.random() * questionTypes.length)];
+            document.getElementById('quizQuestion').textContent = randomQuestion;
+            document.getElementById('quizFeedback').textContent = 'Click a key to answer...';
+            document.getElementById('quizFeedback').className = 'quiz-feedback';
+        }
+
+        function showQuizFeedback(correct) {
+            const feedback = document.getElementById('quizFeedback');
+            if (correct) {
+                feedback.textContent = '✅ Correct! Well done!';
+                feedback.className = 'quiz-feedback correct';
+                setTimeout(() => {
+                    generateQuizQuestion();
+                }, 2000);
+            } else {
+                feedback.textContent = `❌ Not quite. The answer is ${currentQuizAnswer}.`;
+                feedback.className = 'quiz-feedback incorrect';
+            }
+        }
+
+        // Initialize the circle when page loads
+        window.onload = function() {
+            createCircle();
+        };
+    </script>
+</body>
+</html>
